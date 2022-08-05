@@ -1,6 +1,8 @@
 function initStage() {
   const mapContainer = $('#map');
   mapContainer.height($(this).height() - $('.controls').height() - 60);
+
+  Konva.hitOnDragEnabled = true;
   window.map.stage = new Konva.Stage({
     container: 'map',
     width: mapContainer.width(),
