@@ -45,6 +45,81 @@ function initStage() {
     this.position(newPos);
   });
 
+  function getCenter(p1, p2) {
+    return {
+      x: (p1.x + p2.x) / 2,
+      y: (p1.y + p2.y) / 2,
+    };
+  }
+
+  function getDistance(p1, p2) {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+  }
+
+  window.map.stage.on('touchmove', function (e) {
+    e.evt.preventDefault();
+    const touch1 = e.evt.touches[0];
+    const touch2 = e.evt.touches[1];
+
+    if (touch1 && touch2) {
+      // if the stage was under Konva's drag&drop
+      // we need to stop it, and implement our own pan logic with two pointers
+      if (window.map.stage.isDragging()) {
+        window.map.stage.stopDrag();
+      }
+
+      const p1 = {
+        x: touch1.clientX,
+        y: touch1.clientY,
+      };
+      const p2 = {
+        x: touch2.clientX,
+        y: touch2.clientY,
+      };
+
+      if (!window.map.lastCenter) {
+        window.map.lastCenter = getCenter(p1, p2);
+        return;
+      }
+      const newCenter = getCenter(p1, p2);
+      const dist = getDistance(p1, p2);
+
+      if (!window.map.lastDist) {
+        window.map.lastDist = dist;
+      }
+
+      // local coordinates of center point
+      const pointTo = {
+        x: (newCenter.x - window.map.stage.x()) / window.map.stage.scaleX(),
+        y: (newCenter.y - window.map.stage.y()) / window.map.stage.scaleX(),
+      };
+
+      const scale = window.map.stage.scaleX() * (dist / window.map.lastDist);
+
+      window.map.stage.scaleX(scale);
+      window.map.stage.scaleY(scale);
+
+      // calculate new position of the stage
+      const dx = newCenter.x - window.map.lastCenter.x;
+      const dy = newCenter.y - window.map.lastCenter.y;
+
+      const newPos = {
+        x: newCenter.x - pointTo.x * scale + dx,
+        y: newCenter.y - pointTo.y * scale + dy,
+      };
+
+      window.map.stage.position(newPos);
+
+      window.map.lastDist = dist;
+      window.map.lastCenter = newCenter;
+    }
+  });
+
+  window.map.stage.on('touchend', function () {
+    window.map.lastDist = 0;
+    window.map.lastCenter = null;
+  });
+
   $(window).resize(function () {
     $('#map').height($(this).height() - $('.controls').height() - 60);
 
