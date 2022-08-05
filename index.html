@@ -1,0 +1,84 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Vault Hunters - Map Tracker</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="apple-touch-icon" href="icon.png">
+  <!-- Place favicon.ico in the root directory -->
+
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/map.css">
+
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+  <div class="controls">
+    <div class="controls__direction">
+      <label class="controls__direction-n">
+        N
+        <input type="radio" name="direction" value="0" checked>
+      </label>
+      <label class="controls__direction-e">
+        E
+        <input type="radio" name="direction" value="1">
+      </label>
+      <label class="controls__direction-s">
+        S
+        <input type="radio" name="direction" value="2">
+      </label>
+      <label class="controls__direction-w">
+        W
+        <input type="radio" name="direction" value="3">
+      </label>
+    </div>
+    <div class="controls__size">
+      <label>
+        Size (Full width of map)
+        <select name="size">
+          <option value="5">5 (Not used)</option>
+          <option value="7" selected>7 (Lvl 0-24)</option>
+          <option value="9">9 (Lvl 25-49)</option>
+          <option value="11">11 (Lvl 50-74)</option>
+          <option value="13">13 (Lvl 75-99)</option>
+          <option value="15">15 (Lvl 100-, diamond and square)</option>
+          <option value="17">17 (Lvl 100-, circle and triangle)</option>
+        </select>
+      </label>
+    </div>
+    <div class="controls__shape">
+      <label>
+        Shape
+        <select name="shape">
+          <option value="diamond" selected>Diamond</option>
+          <option value="square">Square</option>
+          <option value="circle">Circle</option>
+          <option value="triangle">Triangle</option>
+        </select>
+      </label>
+    </div>
+
+  </div>
+  <div id="map"></div>
+
+  <script src="js/vendor/modernizr-3.11.2.min.js"></script>
+  <script src="js/vendor/jquery.min.js"></script>
+  <script src="https://unpkg.com/konva@8/konva.min.js"></script>
+  <script src="js/mapGenerator.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/plugins.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
