@@ -53,6 +53,20 @@ function initStage() {
       height: mapContainer.height()
     });
   });
+
+  window.map.roomLayer.on('click', toggleRoom);
+  window.map.roomLayer.on('tap', toggleRoom);
+}
+
+function toggleRoom(evt) {
+  const target = evt.target;
+  if (target.getAttr('selectStatus')) {
+    target.setAttr('selectStatus', false);
+    target.fill(window.map.attributes.color.roomFill);
+  } else {
+    target.setAttr('selectStatus', true);
+    target.fill(window.map.attributes.color.completedRoom);
+  }
 }
 
 function drawMap() {
@@ -156,16 +170,6 @@ function renderMap(map) {
       selectStatus: false
     });
 
-    circle.on('click', function () {
-      if (this.getAttr('selectStatus')) {
-        this.setAttr('selectStatus', false);
-        this.fill(color.roomFill);
-      } else {
-        this.setAttr('selectStatus', true);
-        this.fill(color.completedRoom);
-      }
-    });
-
     window.map.roomLayer.add(circle);
   }
 }
@@ -177,12 +181,12 @@ function clearMapSelection() {
 }
 
 function toggleLockPanZoom() {
-  const newState = !window.map.attributes.lockPanZoom;
-  window.map.attributes.lockPanZoom = newState;
-  window.map.stage.draggable(newState);
-  if (newState) {
-    $('.controls__lock-pan button').html('Lock Pan/Zoom');
-  } else {
+  const lock = !window.map.attributes.lockPanZoom;
+  window.map.attributes.lockPanZoom = lock;
+  window.map.stage.draggable(!lock);
+  if (lock) {
     $('.controls__lock-pan button').html('Unlock Pan/Zoom');
+  } else {
+    $('.controls__lock-pan button').html('Lock Pan/Zoom');
   }
 }
