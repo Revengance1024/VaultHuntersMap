@@ -1,8 +1,60 @@
 #map {
   width: 100%;
   max-width: 1200px;
-  height: 80vh;
 
   border: 1px solid black;
+  box-sizing: border-box;
   margin: 0 auto;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: .5rem;
+}
+
+.controls__direction { grid-area: 1 / 1 / 2 / 2; }
+.controls__size { grid-area: 2 / 1 / 3 / 2; }
+.controls__shape { grid-area: 3 / 1 / 4 / 2; }
+.controls__reset { grid-area: 2 / 2 / 3 / 3; }
+.controls__lock-pan { grid-area: 1 / 2 / 2 / 3; }
+
+.controls label {
+  display: flex;
+  line-height: 2rem;
+  margin: .2rem 0;
+  justify-content: space-between;
+}
+
+.controls label span {
+  width: 13rem;
+}
+
+.controls select {
+  width: 16rem;
+  height: 2rem;
+}
+
+.controls__lock-pan, .controls__reset {
+  display: flex;
+  justify-content: flex-end;
+  margin: .2rem 0;
+  height: 2rem;
+}
+
+.controls button {
+  width: 100%;
+}
+
+@media only screen and (min-width: 750px) {
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 1fr);
+  }
+
+  .controls button {
+    width: 12rem;
+    margin-left: 1rem;
+  }
 }

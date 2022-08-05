@@ -7,11 +7,6 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <meta property="og:title" content="">
-  <meta property="og:type" content="">
-  <meta property="og:url" content="">
-  <meta property="og:image" content="">
-
   <link rel="manifest" href="site.webmanifest">
   <link rel="apple-touch-icon" href="icon.png">
   <!-- Place favicon.ico in the root directory -->
@@ -26,26 +21,19 @@
 <body>
   <div class="controls">
     <div class="controls__direction">
-      <label class="controls__direction-n">
-        N
-        <input type="radio" name="direction" value="0" checked>
-      </label>
-      <label class="controls__direction-e">
-        E
-        <input type="radio" name="direction" value="1">
-      </label>
-      <label class="controls__direction-s">
-        S
-        <input type="radio" name="direction" value="2">
-      </label>
-      <label class="controls__direction-w">
-        W
-        <input type="radio" name="direction" value="3">
+      <label>
+        <span>Starting room direction</span>
+        <select name="direction">
+          <option value="0">North</option>
+          <option value="1">East</option>
+          <option value="2">South</option>
+          <option value="3">West</option>
+        </select>
       </label>
     </div>
     <div class="controls__size">
       <label>
-        Size (Full width of map)
+        <span>Size (Full width of map)</span>
         <select name="size">
           <option value="5">5 (Not used)</option>
           <option value="7" selected>7 (Lvl 0-24)</option>
@@ -59,7 +47,7 @@
     </div>
     <div class="controls__shape">
       <label>
-        Shape
+        <span>Shape</span>
         <select name="shape">
           <option value="diamond" selected>Diamond</option>
           <option value="square">Square</option>
@@ -68,11 +56,15 @@
         </select>
       </label>
     </div>
-
+    <div class="controls__reset">
+      <button onclick="clearMapSelection()">Reset Map</button>
+    </div>
+    <div class="controls__lock-pan">
+      <button onclick="toggleLockPanZoom()">Lock Pan/Zoom</button>
+    </div>
   </div>
   <div id="map"></div>
 
-  <script src="js/vendor/modernizr-3.11.2.min.js"></script>
   <script src="js/vendor/jquery.min.js"></script>
   <script src="https://unpkg.com/konva@8/konva.min.js"></script>
   <script src="js/mapGenerator.js"></script>

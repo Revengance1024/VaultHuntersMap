@@ -1,6 +1,6 @@
 {
-  "short_name": "",
-  "name": "",
+  "short_name": "VH Map Tracker",
+  "name": "VaultHunters - Map Tracker",
   "icons": [{
     "src": "icon.png",
     "type": "image/png",

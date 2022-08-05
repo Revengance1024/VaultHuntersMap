@@ -1,14 +1,21 @@
 function initStage() {
   const mapContainer = $('#map');
-  window.mapStage = new Konva.Stage({
+  mapContainer.height($(this).height() - $('.controls').height() - 60);
+  window.map.stage = new Konva.Stage({
     container: 'map',
     width: mapContainer.width(),
     height: mapContainer.height(),
-    draggable: true
+    draggable: !window.map.attributes.lockPanZoom
   });
+  window.map.stage.container().style.backgroundColor = '#d9fcf5';
+
+  window.map.connectorLayer = new Konva.Layer();
+  window.map.roomLayer = new Konva.Layer();
+  window.map.uiLayer = new Konva.Layer();
+  window.map.stage.add(window.map.connectorLayer, window.map.roomLayer, window.map.uiLayer);
 
   const scaleBy = 1.1;
-  window.mapStage.on('wheel', function (event) {
+  window.map.stage.on('wheel', function (event) {
     event.evt.preventDefault();
 
     const oldScale = this.scaleX();
@@ -19,8 +26,7 @@ function initStage() {
       y: (pointer.y - this.y()) / oldScale,
     };
 
-    // how to scale? Zoom in? Or zoom out?
-    let direction = ((event.evt.deltaY > 0) ^ window.mapAttributes.invertZoom) ? 1 : -1;
+    let direction = ((event.evt.deltaY > 0) ^ window.map.attributes.invertZoom) ? 1 : -1;
 
     // when we zoom on trackpad, e.evt.ctrlKey is true
     // in that case lets revert direction
@@ -40,44 +46,45 @@ function initStage() {
   });
 
   $(window).resize(function () {
-    window.mapStage.size({
+    $('#map').height($(this).height() - $('.controls').height() - 60);
+
+    window.map.stage.size({
       width: mapContainer.width(),
       height: mapContainer.height()
     });
-    centerMap();
   });
 }
 
 function drawMap() {
-  const shape = window.mapAttributes.shape;
-  const size = window.mapAttributes.size;
-  const direction = window.mapAttributes.direction;
+  const shape = window.map.attributes.shape;
+  const size = window.map.attributes.size;
+  const direction = window.map.attributes.direction;
 
   const map = generateMap(shape, size, direction);
-
-  renderMap(map, window.mapStage);
+  renderMap(map);
 }
 
 function centerMap() {
-  window.mapStage.x(window.mapStage.width() / 2);
-  window.mapStage.y(window.mapStage.height() / 2);
+  window.map.stage.x(window.map.stage.width() / 2);
+  window.map.stage.y(window.map.stage.height() / 2);
 }
 
-function renderMap(map, stage) {
+function renderMap(map) {
+  const color = window.map.attributes.color;
   const gridSize = 20,
     connectionWidth = 4,
     connectionLength = gridSize;
 
   centerMap();
-  window.mapStage.destroyChildren();
 
-  const roomLayer = new Konva.Layer();
+  window.map.connectorLayer.destroyChildren();
+  window.map.roomLayer.destroyChildren();
 
   for (let i = 0; i < map.connectionList.length; i++) {
     const connection = map.connectionList[i];
 
     const rect = new Konva.Rect({
-      fill: 'red'
+      fill: color.connection
     });
     if (connection.d === 'h') {
       rect.x((connection.x * gridSize) - (connectionLength / 2));
@@ -91,11 +98,11 @@ function renderMap(map, stage) {
       rect.height(connectionLength);
     }
 
-    roomLayer.add(rect);
+    window.map.connectorLayer.add(rect);
   }
 
   const startRect = new Konva.Rect({
-    fill: 'orange'
+    fill: color.start
   });
   switch (map.orientation) {
     case 0:
@@ -134,7 +141,7 @@ function renderMap(map, stage) {
       });
       break;
   }
-  roomLayer.add(startRect);
+  window.map.connectorLayer.add(startRect);
 
   for (let i = 0; i < map.roomList.length; i++) {
     const room = map.roomList[i];
@@ -142,24 +149,40 @@ function renderMap(map, stage) {
     const circle = new Konva.Circle({
       x: room.x * gridSize,
       y: room.y * gridSize,
-      radius: gridSize / 2,
-      stroke: 'cyan',
+      radius: gridSize / 1.3,
+      stroke: color.room,
       strokeWidth: 2,
+      fill: color.roomFill,
       selectStatus: false
     });
 
-    circle.on('click', function (event) {
+    circle.on('click', function () {
       if (this.getAttr('selectStatus')) {
         this.setAttr('selectStatus', false);
-        this.fill('white');
+        this.fill(color.roomFill);
       } else {
         this.setAttr('selectStatus', true);
-        this.fill('red');
+        this.fill(color.completedRoom);
       }
     });
 
-    roomLayer.add(circle);
+    window.map.roomLayer.add(circle);
   }
+}
 
-  stage.add(roomLayer);
+function clearMapSelection() {
+  window.map.roomLayer.getChildren().forEach((room) => {
+    room.fill(window.map.attributes.color.roomFill);
+  });
+}
+
+function toggleLockPanZoom() {
+  const newState = !window.map.attributes.lockPanZoom;
+  window.map.attributes.lockPanZoom = newState;
+  window.map.stage.draggable(newState);
+  if (newState) {
+    $('.controls__lock-pan button').html('Lock Pan/Zoom');
+  } else {
+    $('.controls__lock-pan button').html('Unlock Pan/Zoom');
+  }
 }
