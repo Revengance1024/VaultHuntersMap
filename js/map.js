@@ -1,27 +1,36 @@
-function initStage() {
+import { generateMap } from './mapGenerator.js';
+
+export function initStage() {
   const mapContainer = $('#map');
-  mapContainer.height($(this).height() - $('.controls').height() - 60);
+  mapContainer.height($(window).height() - $('.controls').height() - 60);
 
   Konva.hitOnDragEnabled = true;
   window.map.stage = new Konva.Stage({
     container: 'map',
     width: mapContainer.width(),
     height: mapContainer.height(),
-    draggable: !window.map.attributes.lockPanZoom
   });
-  window.map.stage.container().style.backgroundColor = '#d9fcf5';
 
-  window.map.connectorLayer = new Konva.Layer();
   window.map.roomLayer = new Konva.Layer();
   window.map.uiLayer = new Konva.Layer();
-  window.map.stage.add(window.map.connectorLayer, window.map.roomLayer, window.map.uiLayer);
+  window.map.stage.add(window.map.roomLayer, window.map.uiLayer);
+
+  window.map.mapGroup = new Konva.Group({
+    draggable: !window.map.attributes.lockPanZoom
+  });
+  window.map.roomLayer.add(window.map.mapGroup);
+
+  window.map.connectionGroup = new Konva.Group();
+  window.map.mapGroup.add(window.map.connectionGroup);
+  window.map.roomGroup = new Konva.Group();
+  window.map.mapGroup.add(window.map.roomGroup);
 
   const scaleBy = 1.1;
-  window.map.stage.on('wheel', function (event) {
+  window.map.mapGroup.on('wheel', function (event) {
     event.evt.preventDefault();
 
     const oldScale = this.scaleX();
-    const pointer = this.getPointerPosition();
+    const pointer = window.map.stage.getPointerPosition();
 
     const mousePointTo = {
       x: (pointer.x - this.x()) / oldScale,
@@ -47,81 +56,6 @@ function initStage() {
     this.position(newPos);
   });
 
-  function getCenter(p1, p2) {
-    return {
-      x: (p1.x + p2.x) / 2,
-      y: (p1.y + p2.y) / 2,
-    };
-  }
-
-  function getDistance(p1, p2) {
-    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-  }
-
-  window.map.stage.on('touchmove', function (e) {
-    e.evt.preventDefault();
-    const touch1 = e.evt.touches[0];
-    const touch2 = e.evt.touches[1];
-
-    if (touch1 && touch2) {
-      // if the stage was under Konva's drag&drop
-      // we need to stop it, and implement our own pan logic with two pointers
-      if (window.map.stage.isDragging()) {
-        window.map.stage.stopDrag();
-      }
-
-      const p1 = {
-        x: touch1.clientX,
-        y: touch1.clientY,
-      };
-      const p2 = {
-        x: touch2.clientX,
-        y: touch2.clientY,
-      };
-
-      if (!window.map.lastCenter) {
-        window.map.lastCenter = getCenter(p1, p2);
-        return;
-      }
-      const newCenter = getCenter(p1, p2);
-      const dist = getDistance(p1, p2);
-
-      if (!window.map.lastDist) {
-        window.map.lastDist = dist;
-      }
-
-      // local coordinates of center point
-      const pointTo = {
-        x: (newCenter.x - window.map.stage.x()) / window.map.stage.scaleX(),
-        y: (newCenter.y - window.map.stage.y()) / window.map.stage.scaleX(),
-      };
-
-      const scale = window.map.stage.scaleX() * (dist / window.map.lastDist);
-
-      window.map.stage.scaleX(scale);
-      window.map.stage.scaleY(scale);
-
-      // calculate new position of the stage
-      const dx = newCenter.x - window.map.lastCenter.x;
-      const dy = newCenter.y - window.map.lastCenter.y;
-
-      const newPos = {
-        x: newCenter.x - pointTo.x * scale + dx,
-        y: newCenter.y - pointTo.y * scale + dy,
-      };
-
-      window.map.stage.position(newPos);
-
-      window.map.lastDist = dist;
-      window.map.lastCenter = newCenter;
-    }
-  });
-
-  window.map.stage.on('touchend', function () {
-    window.map.lastDist = 0;
-    window.map.lastCenter = null;
-  });
-
   $(window).resize(function () {
     $('#map').height($(this).height() - $('.controls').height() - 60);
 
@@ -131,33 +65,16 @@ function initStage() {
     });
   });
 
-  window.map.roomLayer.on('click', toggleRoom);
-  window.map.roomLayer.on('tap', toggleRoom);
+  window.map.roomGroup.on('click tap', toggleRoom);
 }
 
-function toggleRoom(evt) {
-  const target = evt.target;
-  if (target.getAttr('selectStatus')) {
-    target.setAttr('selectStatus', false);
-    target.fill(window.map.attributes.color.roomFill);
-  } else {
-    target.setAttr('selectStatus', true);
-    target.fill(window.map.attributes.color.completedRoom);
-  }
-}
-
-function drawMap() {
+export function drawMap() {
   const shape = window.map.attributes.shape;
   const size = window.map.attributes.size;
   const direction = window.map.attributes.direction;
 
   const map = generateMap(shape, size, direction);
   renderMap(map);
-}
-
-function centerMap() {
-  window.map.stage.x(window.map.stage.width() / 2);
-  window.map.stage.y(window.map.stage.height() / 2);
 }
 
 function renderMap(map) {
@@ -168,8 +85,17 @@ function renderMap(map) {
 
   centerMap();
 
-  window.map.connectorLayer.destroyChildren();
-  window.map.roomLayer.destroyChildren();
+  window.map.connectionGroup.destroyChildren();
+  window.map.roomGroup.destroyChildren();
+
+  const background = new Konva.Rect({
+    fill: color.background,
+    x: -10000,
+    y: -10000,
+    width: 20000,
+    height: 20000
+  });
+  window.map.connectionGroup.add(background);
 
   for (let i = 0; i < map.connectionList.length; i++) {
     const connection = map.connectionList[i];
@@ -189,7 +115,7 @@ function renderMap(map) {
       rect.height(connectionLength);
     }
 
-    window.map.connectorLayer.add(rect);
+    window.map.connectionGroup.add(rect);
   }
 
   const startRect = new Konva.Rect({
@@ -232,7 +158,7 @@ function renderMap(map) {
       });
       break;
   }
-  window.map.connectorLayer.add(startRect);
+  window.map.connectionGroup.add(startRect);
 
   for (let i = 0; i < map.roomList.length; i++) {
     const room = map.roomList[i];
@@ -247,23 +173,87 @@ function renderMap(map) {
       selectStatus: false
     });
 
-    window.map.roomLayer.add(circle);
+    window.map.roomGroup.add(circle);
   }
 }
 
-function clearMapSelection() {
-  window.map.roomLayer.getChildren().forEach((room) => {
+function toggleRoom(evt) {
+  const target = evt.target;
+  if (target.getAttr('selectStatus')) {
+    target.setAttr('selectStatus', false);
+    target.fill(window.map.attributes.color.roomFill);
+  } else {
+    target.setAttr('selectStatus', true);
+    target.fill(window.map.attributes.color.completedRoom);
+  }
+}
+
+export function centerMap() {
+  window.map.mapGroup.x(window.map.stage.width() / 2);
+  window.map.mapGroup.y(window.map.stage.height() / 2);
+}
+
+export function clearMapSelection() {
+  window.map.roomGroup.getChildren().forEach((room) => {
     room.fill(window.map.attributes.color.roomFill);
   });
 }
 
-function toggleLockPanZoom() {
+export function toggleLockPanZoom() {
   const lock = !window.map.attributes.lockPanZoom;
   window.map.attributes.lockPanZoom = lock;
-  window.map.stage.draggable(!lock);
+  window.map.mapGroup.draggable(!lock);
   if (lock) {
     $('.controls__lock-pan button').html('Unlock Pan/Zoom');
   } else {
     $('.controls__lock-pan button').html('Lock Pan/Zoom');
   }
+}
+
+export function renderUI() {
+  const zoomInButton = new Konva.Rect({
+    width: 48,
+    height: 48,
+    x: 20,
+    y: 20
+  });
+
+  const plusIcon = new Image();
+  plusIcon.onload = function () {
+    zoomInButton.fillPatternImage(plusIcon);
+    window.map.uiLayer.add(zoomInButton);
+  }
+  plusIcon.src = 'img/icon-plus.png';
+
+  zoomInButton.on('click tap', function () {
+    const oldScale = window.map.mapGroup.scale();
+    const scaleMulti = 1.2;
+    window.map.mapGroup.scale({
+      x: oldScale.x * scaleMulti,
+      y: oldScale.y * scaleMulti
+    });
+  });
+
+  const zoomOutButton = new Konva.Rect({
+    width: 48,
+    height: 48,
+    x: 20,
+    y: 20 + 48 + 20
+  });
+
+  const minusIcon = new Image();
+  minusIcon.onload = function () {
+    zoomOutButton.fillPatternImage(minusIcon);
+    window.map.uiLayer.add(zoomOutButton);
+  }
+  minusIcon.src = 'img/icon-minus.png';
+
+  zoomOutButton.on('click tap', function () {
+    const oldScale = window.map.mapGroup.scale();
+    const scaleMulti = 1.2;
+    window.map.mapGroup.scale({
+      x: oldScale.x / scaleMulti,
+      y: oldScale.y / scaleMulti
+    });
+  });
 }

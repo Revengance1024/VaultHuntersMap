@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>Vault Hunters - Map Tracker</title>
-  <meta name="description" content="">
+  <meta name="description" content="Interactive map to keep track of completed vault rooms in Minecraft modpack: Vault Hunters">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="manifest" href="site.webmanifest">
@@ -57,20 +57,18 @@
       </label>
     </div>
     <div class="controls__reset">
-      <button onclick="clearMapSelection()">Reset Map</button>
+      <button name="reset">Reset Map</button>
     </div>
     <div class="controls__lock-pan">
-      <button onclick="toggleLockPanZoom()">Lock Pan/Zoom</button>
+      <button name="lock_pan">Lock Pan/Zoom</button>
     </div>
   </div>
   <div id="map"></div>
 
   <script src="js/vendor/jquery.min.js"></script>
   <script src="https://unpkg.com/konva@8/konva.min.js"></script>
-  <script src="js/mapGenerator.js"></script>
-  <script src="js/map.js"></script>
   <script src="js/plugins.js"></script>
-  <script src="js/main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 
 </html>

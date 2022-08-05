@@ -1,5 +1,7 @@
+import * as Map from './map.js';
+
 (function () {
-  window.addEventListener('load', function(event) {
+  window.addEventListener('load', function (event) {
     window.map = {};
     window.map.attributes = {
       direction: 0,
@@ -16,20 +18,23 @@
         completedRoom: '#435475'
       }
     };
-    initStage();
-    drawMap();
+    Map.initStage();
+    Map.drawMap();
+    Map.renderUI();
 
     $('[name="direction"]').change(function () {
       window.map.attributes.direction = parseInt($(this).val());
-      drawMap();
+      Map.drawMap();
     });
     $('[name="size"]').change(function () {
       window.map.attributes.size = parseInt($(this).val());
-      drawMap();
+      Map.drawMap();
     });
     $('[name="shape"]').change(function () {
       window.map.attributes.shape = $(this).val();
-      drawMap();
+      Map.drawMap();
     });
+    $('[name="lock_pan"]').on('click', Map.toggleLockPanZoom);
+    $('[name="reset"]').on('click', Map.clearMapSelection);
   });
 })();

@@ -53,8 +53,8 @@ function generateDiamondMap(size, orientation) {
       }
 
       const cx = x * 2,
-            cy = y * 2,
-            isEdge = (Math.abs(x) + Math.abs(y) === radius);
+        cy = y * 2,
+        isEdge = (Math.abs(x) + Math.abs(y) === radius);
 
       map.roomList.push({
         id: roomId,
@@ -100,7 +100,7 @@ function generateSquareMap(size, orientation) {
   for (let y = -radius; y <= radius; y++) {
     for (let x = -radius; x <= radius; x++) {
       const cx = x * 2,
-            cy = y * 2;
+        cy = y * 2;
 
       map.roomList.push({
         id: roomId,
@@ -245,7 +245,7 @@ function generateTriangleMap(size, orientation) {
  * @param {number} orientation - direction of the starting room exit (0 - north, 1 - east, 2 - south, 3 - west)
  * @return {object}
  */
-function generateMap(shape, size, orientation) {
+export function generateMap(shape, size, orientation) {
   switch (shape) {
     case 'square':
       return generateSquareMap(size, orientation);
