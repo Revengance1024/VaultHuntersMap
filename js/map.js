@@ -27,6 +27,7 @@ export function initStage() {
 
   const scaleBy = 1.1;
   window.map.mapGroup.on('wheel', function (event) {
+    if (window.map.attributes.lockPanZoom) return;
     event.evt.preventDefault();
 
     const oldScale = this.scaleX();
@@ -83,7 +84,10 @@ function renderMap(map) {
     connectionWidth = 4,
     connectionLength = gridSize;
 
-  centerMap();
+
+  if (!window.map.attributes.lockPanZoom) {
+    centerMap();
+  }
 
   window.map.connectionGroup.destroyChildren();
   window.map.roomGroup.destroyChildren();
@@ -226,6 +230,7 @@ export function renderUI() {
   plusIcon.src = 'img/icon-plus.png';
 
   zoomInButton.on('click tap', function () {
+    if (window.map.attributes.lockPanZoom) return;
     const oldScale = window.map.mapGroup.scale();
     const scaleMulti = 1.2;
     window.map.mapGroup.scale({
@@ -249,6 +254,7 @@ export function renderUI() {
   minusIcon.src = 'img/icon-minus.png';
 
   zoomOutButton.on('click tap', function () {
+    if (window.map.attributes.lockPanZoom) return;
     const oldScale = window.map.mapGroup.scale();
     const scaleMulti = 1.2;
     window.map.mapGroup.scale({
